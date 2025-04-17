@@ -13,4 +13,3 @@ applications:
     services:
       - config
       - registry
-      - wavefront

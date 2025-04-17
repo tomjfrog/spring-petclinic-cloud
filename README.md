@@ -5,7 +5,8 @@
 This microservices branch was initially derived from the [microservices version](https://github.com/spring-petclinic/spring-petclinic-microservices) to demonstrate how to split sample Spring application into [microservices](http://www.martinfowler.com/articles/microservices.html).
 To achieve that goal we use Spring Cloud Gateway, Spring Cloud Circuit Breaker, Spring Cloud Config, Spring Cloud Sleuth, Resilience4j, Micrometer and the Eureka Service Discovery from the [Spring Cloud Netflix](https://github.com/spring-cloud/spring-cloud-netflix) technology stack. While running on Kubernetes, some components (such as Spring Cloud Config and Eureka Service Discovery) are replaced with Kubernetes-native features such as config maps and Kubernetes DNS resolution.
 
-This fork also demostrates the use of free distributed tracing with Tanzu Observability by Wavefront, which provides cloud-based monitoring of  Spring Boot applications with 5 days of history.
+This fork also demostrates the use of free distributed tracing with Tanzu Observability by 
+, which provides cloud-based monitoring of  Spring Boot applications with 5 days of history.
 
 
   * [Understanding the Spring Petclinic application](#understanding-the-spring-petclinic-application)
@@ -52,9 +53,13 @@ For more information on Tanzu Application Service, see: https://docs.pivotal.io/
 For a list of available Cloud Foundry distributions, see: https://www.cloudfoundry.org/certified-platforms/  
 For local testing and development, you can use PCF Dev: https://docs.pivotal.io/pcf-dev/  
 
-This application uses Wavefront as a SaaS that can provide free Spring Boot monitoring and Open Tracing for your application. If you'd like to remove the Wavefront integration, please remove the `wavefront` user-provided service reference from [manifest.yml](./manifest.yml). 
+This application uses 
+ as a SaaS that can provide free Spring Boot monitoring and Open Tracing for your application. If you'd like to remove the 
+ integration, please remove the `
+` user-provided service reference from [manifest.yml](./manifest.yml). 
 
-Otherwise, generate a free wavefront token by running one of the apps, for example:
+Otherwise, generate a free 
+ token by running one of the apps, for example:
 
 ```bash
 cd spring-petclinic-api-gateway
@@ -64,26 +69,37 @@ mvn spring-boot:run
 You will see something like this in the logs:
 
 ```
-A Wavefront account has been provisioned successfully and the API token has been saved to disk.
+A 
+ account has been provisioned successfully and the API token has been saved to disk.
 
 To share this account, make sure the following is added to your configuration:
 
-	management.metrics.export.wavefront.api-token=2e41f7cf-1111-2222-3333-7397a56113ca
-	management.metrics.export.wavefront.uri=https://wavefront.surf
+	management.metrics.export.
+.api-token=2e41f7cf-1111-2222-3333-7397a56113ca
+	management.metrics.export.
+.uri=https://
+.surf
 
-Connect to your Wavefront dashboard using this one-time use link:
-https://wavefront.surf/us/AAA4s5f8xJ9yD
+Connect to your 
+ dashboard using this one-time use link:
+https://
+.surf/us/AAA4s5f8xJ9yD
 
 ```
 
 You free account has now been created.
 
-Create a user-provided service for Wavefront using the data above. For example:
+Create a user-provided service for 
+ using the data above. For example:
 
 ```
-cf cups -p '{"uri": "https://wavefront.surf", "api-token": "2e41f7cf-1111-2222-3333-7397a56113ca", "application-name": "spring-petclinic-cloudfoundry", "fremium": "true"}' wavefront
+cf cups -p '{"uri": "https://
+.surf", "api-token": "2e41f7cf-1111-2222-3333-7397a56113ca", "application-name": "spring-petclinic-cloudfoundry", "fremium": "true"}' 
+
 ```
-If your operator deployed the wavefront proxy in your Cloud Foundry environment, point the URI to the proxy instead. You can obtain the value of the IP and port by creating a service key of the wavefront proxy and viewing the resulting JSON file. 
+If your operator deployed the 
+ proxy in your Cloud Foundry environment, point the URI to the proxy instead. You can obtain the value of the IP and port by creating a service key of the 
+ proxy and viewing the resulting JSON file. 
 
 Contine with creating the services and deploying the application's microservices. A sample is available at `scripts/deployToCloudFoundry.sh`. Note that some of the services' plans may be different in your environment, so please review before executing. For example, you want want to fork the [spring-petclinic-cloud-config](https://github.com/spring-petclinic/spring-petclinic-cloud-config.git) repository if you want to make changes to the configuration.
 
@@ -129,13 +145,18 @@ visits-service      started           1/1         1G       1G     visits-service
 
 Access your route (like `api-gateway.apps.mysite.com` above) to see the application.
 
-Access the one-time URL you received when bootstraping Wavefront to see Zipkin traces and other monitoring of your microservices:
+Access the one-time URL you received when bootstraping 
+ to see Zipkin traces and other monitoring of your microservices:
 
-![Wavefront dashboard screen](./docs/wavefront-summary.png)
+![
+ dashboard screen](./docs/
+-summary.png)
 
 Since we've included `brave.mysql8` in our `pom.xml`, the traces even show the various DB queries traces:
 
-![Wavefront dashboard screen](./docs/wavefront-traces.png)
+![
+ dashboard screen](./docs/
+-traces.png)
 
 
 
@@ -185,13 +206,19 @@ Create the `spring-petclinic` namespace for Spring petclinic:
 kubectl apply -f k8s/init-namespace/ 
 ```
 
-Create a Kubernetes secret to store the URL and API Token of Wavefront (replace values with your own real ones):
+Create a Kubernetes secret to store the URL and API Token of 
+ (replace values with your own real ones):
 
 ```bash
-kubectl create secret generic wavefront -n spring-petclinic --from-literal=wavefront-url=https://wavefront.surf --from-literal=wavefront-api-token=2e41f7cf-1111-2222-3333-7397a56113ca
+kubectl create secret generic 
+ -n spring-petclinic --from-literal=
+-url=https://
+.surf --from-literal=
+-api-token=2e41f7cf-1111-2222-3333-7397a56113ca
 ```
 
-Create the Wavefront proxy pod, and the various Kubernetes services that will be used later on by our deployments:
+Create the 
+ proxy pod, and the various Kubernetes services that will be used later on by our deployments:
 
 ```bash
 kubectl apply -f k8s/init-services
@@ -206,15 +233,18 @@ api-gateway         LoadBalancer   10.7.250.24    <pending>     80:32675/TCP    
 customers-service   ClusterIP      10.7.245.64    <none>        8080/TCP            36s
 vets-service        ClusterIP      10.7.245.150   <none>        8080/TCP            36s
 visits-service      ClusterIP      10.7.251.227   <none>        8080/TCP            35s
-wavefront-proxy     ClusterIP      10.7.253.85    <none>        2878/TCP,9411/TCP   37s
+
+-proxy     ClusterIP      10.7.253.85    <none>        2878/TCP,9411/TCP   37s
 ```
 
-Verify the wavefront proxy is running:
+Verify the 
+ proxy is running:
 
 ```bash
 ✗ kubectl get pods -n spring-petclinic
 NAME                              READY   STATUS    RESTARTS   AGE
-wavefront-proxy-dfbd4b695-fdd6t   1/1     Running   0          36s
+
+-proxy-dfbd4b695-fdd6t   1/1     Running   0          36s
 
 ```
 
@@ -261,7 +291,8 @@ vets-db-mysql-0                      1/1     Running   0          11m
 vets-service-85cb8677df-l5xpj        1/1     Running   0          4m2s
 visits-db-mysql-0                    1/1     Running   0          11m
 visits-service-654fffbcc7-zj2jw      1/1     Running   0          4m2s
-wavefront-proxy-dfbd4b695-fdd6t      1/1     Running   0          14m
+
+-proxy-dfbd4b695-fdd6t      1/1     Running   0          14m
 ```
 
 Get the `EXTERNAL-IP` of the API Gateway:
@@ -274,9 +305,12 @@ api-gateway   LoadBalancer   10.7.250.24   34.1.2.22   80:32675/TCP   18m
 
 You can now browse to that IP in your browser and see the application running.
 
-You should also see monitoring and traces from Wavefront under the application name `spring-petclinic-k8s`:
+You should also see monitoring and traces from 
+ under the application name `spring-petclinic-k8s`:
 
-![Wavefront dashboard screen](./docs/wavefront-k8s.png)
+![
+ dashboard screen](./docs/
+-k8s.png)
 
 
 

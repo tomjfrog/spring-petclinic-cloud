@@ -16,4 +16,5 @@ applications:
       - customers-db
       - config
       - registry
-      - wavefront
+      - 
+

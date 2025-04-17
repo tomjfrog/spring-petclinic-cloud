@@ -17,7 +17,7 @@ FROM adoptopenjdk:11-jre-hotspot
 WORKDIR application
 
 # Dockerize
-COPY --from=builder application/dockerize ./
+COPY --from=builder /application/dockerize ./
 
 ARG EXPOSED_PORT
 EXPOSE ${EXPOSED_PORT}

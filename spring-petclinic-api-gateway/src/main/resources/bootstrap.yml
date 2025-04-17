@@ -5,11 +5,6 @@ spring:
   application:
     name: api-gateway
 #this is a bug that needs to be resolved
-management:
-  metrics:
-    export:
-      wavefront:
-        apiToken: ""
 ---
 spring:
   config:

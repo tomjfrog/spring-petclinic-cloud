@@ -70,7 +70,6 @@ deploy:
     - k8s/init-namespace/02-regcreds.yaml
     - k8s/init-services/02-config-map.yaml
     - k8s/init-services/03-role.yaml
-    #- k8s/init-services/04-wavefront.yaml
     - k8s/init-services/05-api-gateway-service.yaml
     - k8s/init-services/06-customers-service-service.yaml
     - k8s/init-services/07-vets-service-service.yaml
