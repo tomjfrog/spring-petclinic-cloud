@@ -10,7 +10,6 @@ This fork also demostrates the use of free distributed tracing with Tanzu Observ
 
 
   * [Understanding the Spring Petclinic application](#understanding-the-spring-petclinic-application)
-  * [Compiling and pushing to Cloud Foundry:](#compiling-and-pushing-to-cloud-foundry)
   * [Compiling and pushing to Kubernetes](#compiling-and-pushing-to-kubernetes)
     + [Choose your Docker registry](#choose-your-docker-registry)
     + [Setting things up in Kubernetes](#setting-things-up-in-kubernetes)
@@ -41,144 +40,22 @@ You can then access petclinic here: http://localhost:8080/
 
 ![Spring Petclinic Microservices screenshot](./docs/application-screenshot.png?lastModify=1596391473)
 
-
-
-
-## Compiling and pushing to Cloud Foundry:
-
-The samples below are using Tanzu Application Service (previously Pivotal Cloud Foundry) as the target Cloud Foundry deployment, some adjustments may be needed for other Cloud Foundry distributions.
-
-Please make sure you have the latest `cf` cli installed: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html  
-For more information on Tanzu Application Service, see: https://docs.pivotal.io/application-service/2-10/overview/dev.html  
-For a list of available Cloud Foundry distributions, see: https://www.cloudfoundry.org/certified-platforms/  
-For local testing and development, you can use PCF Dev: https://docs.pivotal.io/pcf-dev/  
-
-This application uses 
- as a SaaS that can provide free Spring Boot monitoring and Open Tracing for your application. If you'd like to remove the 
- integration, please remove the `
-` user-provided service reference from [manifest.yml](./manifest.yml). 
-
-Otherwise, generate a free 
- token by running one of the apps, for example:
-
-```bash
-cd spring-petclinic-api-gateway
-mvn spring-boot:run
-```
-
-You will see something like this in the logs:
-
-```
-A 
- account has been provisioned successfully and the API token has been saved to disk.
-
-To share this account, make sure the following is added to your configuration:
-
-	management.metrics.export.
-.api-token=2e41f7cf-1111-2222-3333-7397a56113ca
-	management.metrics.export.
-.uri=https://
-.surf
-
-Connect to your 
- dashboard using this one-time use link:
-https://
-.surf/us/AAA4s5f8xJ9yD
-
-```
-
-You free account has now been created.
-
-Create a user-provided service for 
- using the data above. For example:
-
-```
-cf cups -p '{"uri": "https://
-.surf", "api-token": "2e41f7cf-1111-2222-3333-7397a56113ca", "application-name": "spring-petclinic-cloudfoundry", "fremium": "true"}' 
-
-```
-If your operator deployed the 
- proxy in your Cloud Foundry environment, point the URI to the proxy instead. You can obtain the value of the IP and port by creating a service key of the 
- proxy and viewing the resulting JSON file. 
-
-Contine with creating the services and deploying the application's microservices. A sample is available at `scripts/deployToCloudFoundry.sh`. Note that some of the services' plans may be different in your environment, so please review before executing. For example, you want want to fork the [spring-petclinic-cloud-config](https://github.com/spring-petclinic/spring-petclinic-cloud-config.git) repository if you want to make changes to the configuration.
-
-```
-echo "Creating Required Services..."
-{
-  cf create-service -c '{ "git": { "uri": "https://github.com/spring-petclinic/spring-petclinic-cloud-config.git", "periodic": true }, "count": 3 }' p.config-server standard config &
-  cf create-service p.service-registry standard registry & 
-  cf create-service p.mysql db-small customers-db &
-  cf create-service p.mysql db-small vets-db &
-  cf create-service p.mysql db-small visits-db &
-  sleep 5
-} &> /dev/null
-until [ `cf service config | grep -c "succeeded"` -ge 1  ] && [ `cf service registry | grep -c "succeeded"` -ge 1  ] && [ `cf service customers-db | grep -c "succeeded"` -ge 1  ] && [ `cf service vets-db | grep -c "succeeded"` -ge 1  ] && [ `cf service visits-db | grep -c "succeeded"` -ge 1  ]
-do
-  echo -n "."
-done
-
-mvn clean package -Pcloud
-cf push --no-start
-
-cf add-network-policy api-gateway --destination-app vets-service --protocol tcp --port 8080
-cf add-network-policy api-gateway --destination-app customers-service --protocol tcp --port 8080
-cf add-network-policy api-gateway --destination-app visits-service --protocol tcp --port 8080
-
-cf start vets-service & cf start visits-service & cf start customers-service & cf start api-gateway &
-```
-
-You can now access your application by querying the route for the `api-gateway`:
-
-```
-✗ cf apps
-Getting apps in org pet-clinic / space pet-clinic as user@email.com...
-OK
-
-name                requested state   instances   memory   disk   urls
-api-gateway         started           1/1         1G       1G     api-gateway.apps.mysite.com
-customers-service   started           1/1         1G       1G     customers-service.apps.internal
-vets-service        started           1/1         1G       1G     vets-service.apps.internal
-visits-service      started           1/1         1G       1G     visits-service.apps.internal
-
-```
-
-Access your route (like `api-gateway.apps.mysite.com` above) to see the application.
-
-Access the one-time URL you received when bootstraping 
- to see Zipkin traces and other monitoring of your microservices:
-
-![
- dashboard screen](./docs/
--summary.png)
-
-Since we've included `brave.mysql8` in our `pom.xml`, the traces even show the various DB queries traces:
-
-![
- dashboard screen](./docs/
--traces.png)
-
-
-
 ## Compiling and pushing to Kubernetes
 
 This get a little bit more complicated when deploying to Kubernetes, since we need to manage Docker images, exposing services and more yaml. But we can pull through!
 
 ### Choose your Docker registry
 
-You need to define your target Docker registry. Make sure you're already logged in by running `docker login <endpoint>` or `docker login` if you're just targeting Docker hub.
-
-Setup an env variable to target your Docker registry. If you're targeting Docker hub, simple provide your username, for example:
-
-```bash
-export REPOSITORY_PREFIX=odedia
-```
+You need to define your target Docker registry. Make sure you're already logged in by running `docker login <endpoint>`
 
 For other Docker registries, provide the full URL to your repository, for example:
 
 ```bash
-export REPOSITORY_PREFIX=harbor.myregistry.com/demo
+export REPOSITORY_PREFIX=myinstance.jfrog.io/mydockerlocal
 ```
+
+### Configure Java Version
+There is a lot of work to do in order to bring this up to Java 17. As a TODO, I will outline where to make the changes to run on Java 17 or 21.
 
 One of the neat features in Spring Boot 2.3 is that it can leverage [Cloud Native Buildpacks](https://buildpacks.io) and [Paketo Buildpacks](https://paketo.io) to build production-ready images for us. Since we also configured the `spring-boot-maven-plugin` to use `layers`, we'll get optimized layering of the various components that build our Spring Boot app for optimal image caching. What this means in practice is that if we simple change a line of code in our app, it would only require us to push the layer containing our code and not the entire uber jar. To build all images and pushing them to your registry, run:
 
@@ -206,6 +83,8 @@ Create the `spring-petclinic` namespace for Spring petclinic:
 kubectl apply -f k8s/init-namespace/ 
 ```
 
+> Note: This next step should be deleted....
+
 Create a Kubernetes secret to store the URL and API Token of 
  (replace values with your own real ones):
 
@@ -216,9 +95,18 @@ kubectl create secret generic
 .surf --from-literal=
 -api-token=2e41f7cf-1111-2222-3333-7397a56113ca
 ```
+Create a Image Pull Secret to pull images from your JFrog Docker registry:
+```bash
+kubectl create secret docker-registry <some-arbitrary-name> \
+  --docker-server=<server-name>.jfrog.io \
+  --docker-username=<jpd-user-name> \
+  --docker-password=<jpd-token> \
+  --docker-email=<some-arbitrary-email> \
+  --namespace=spring-petclinic
+```
 
-Create the 
- proxy pod, and the various Kubernetes services that will be used later on by our deployments:
+```bash
+Create the proxy pod, and the various Kubernetes services that will be used later on by our deployments:
 
 ```bash
 kubectl apply -f k8s/init-services
