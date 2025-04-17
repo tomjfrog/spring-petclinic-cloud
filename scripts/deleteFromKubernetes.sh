@@ -7,5 +7,5 @@ elif [ -z "${K8S_NAMESPACE}" ]; then
 else
     cat ./k8s/*.yaml | \
     sed "s#\${REPOSITORY_PREFIX}#${REPOSITORY_PREFIX}#g" | \
-    kubectl apply -n "${K8S_NAMESPACE}" -f -
+    kubectl delete -n "${K8S_NAMESPACE}" -f -
 fi
